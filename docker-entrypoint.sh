@@ -51,8 +51,7 @@ if ! mariadb --socket="$SOCKET" -u root -e "SELECT 1 FROM ${DB_NAME}.users LIMIT
   mariadb --socket="$SOCKET" -u root "$DB_NAME" < "$ROOT/schema.sql"
 
   mariadb --socket="$SOCKET" -u root "$DB_NAME" -e \
-    "INSERT INTO options (option_name, value) VALUES ('title', '${SITE_TITLE}'), ('slogan', '${SITE_SLOGAN}');
-     INSERT INTO settings (name, value) VALUES
+    "INSERT INTO settings (name, value) VALUES
        ('logo', '0'), ('top_text', ''), ('guidelines', '1'), ('help', '1'),
        ('signup', '1'), ('login', '1'), ('uploader', '1'), ('channels', '1'), ('videos', '1');"
 
