@@ -34,6 +34,7 @@ fi
 echo "[entrypoint] starting MariaDB"
 mariadbd --datadir=/var/lib/mysql --socket="$SOCKET" \
   --pid-file=/tmp/mysqld/mysqld.pid --port=3306 --bind-address=127.0.0.1 \
+  --skip-networking=0 \
   --skip-name-resolve --performance-schema=OFF \
   --innodb-buffer-pool-size=64M --log-error=/tmp/mysqld/mariadb.err &
 
@@ -86,7 +87,7 @@ password = "${DB_PASS}"
 title = "${SITE_TITLE}"
 slogan = "${SITE_SLOGAN}"
 uploadLimit = "2147483648"
-language = "en"
+language = "en_US"
 show_online_count = "1"
 EOF
 
