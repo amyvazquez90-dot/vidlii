@@ -90,6 +90,14 @@ language = "en"
 show_online_count = "1"
 EOF
 
+# Prove the application's own database path works (same .env, same TCP user,
+# same login query). A failure here is logged instead of only surfacing later
+# to the user as "Invalid Username or Password".
+if ! ROOT_IN="$ROOT" ADMIN_USER_IN="$ADMIN_USER" ADMIN_PASSWORD_IN="$ADMIN_PASSWORD" \
+     php "$ROOT/scripts/verify-db.php"; then
+  echo "[entrypoint] WARNING: application database self-check failed" >&2
+fi
+
 echo "[entrypoint] starting PHP server on 0.0.0.0:${PORT}"
 # A few worker processes so asset requests are not serialized behind one request.
 export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
