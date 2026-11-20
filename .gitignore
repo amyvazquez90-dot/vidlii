@@ -11,3 +11,5 @@
 /.idea
 /.osp
 .env
+# Runtime environment (generated at container start)
+.env

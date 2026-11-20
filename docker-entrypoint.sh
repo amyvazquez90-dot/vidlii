@@ -5,7 +5,7 @@ set -euo pipefail
 
 ROOT=/var/www/html
 PORT="${PORT:-3000}"
-SOCKET=/run/mysqld/mysqld.sock
+SOCKET=/tmp/mysqld/mysqld.sock
 DB_NAME=vidlii
 DB_USER=vidlii
 ADMIN_USER="${ADMIN_USER:-admin}"
@@ -16,7 +16,7 @@ SITE_SLOGAN="${SITE_SLOGAN:-Display Yourself.}"
 # Random per-boot database password (kept only inside this container)
 DB_PASS="$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24)"
 
-mkdir -p /run/mysqld "$ROOT/cache" "$ROOT/usfi/v" "$ROOT/usfi/thmp" \
+mkdir -p /tmp/mysqld "$ROOT/cache" "$ROOT/usfi/v" "$ROOT/usfi/thmp" \
          "$ROOT/usfi/conv" "$ROOT/usfi/conv_2" "$ROOT/usfi/prvw"
 
 # Fresh data directory (first boot only)
@@ -28,9 +28,9 @@ fi
 
 echo "[entrypoint] starting MariaDB"
 mariadbd --datadir=/var/lib/mysql --socket="$SOCKET" \
-  --pid-file=/run/mysqld/mysqld.pid --port=3306 --bind-address=127.0.0.1 \
+  --pid-file=/tmp/mysqld/mysqld.pid --port=3306 --bind-address=127.0.0.1 \
   --skip-name-resolve --performance-schema=OFF \
-  --innodb-buffer-pool-size=64M --log-error=/run/mysqld/mariadb.err &
+  --innodb-buffer-pool-size=64M --log-error=/tmp/mysqld/mariadb.err &
 
 for _ in $(seq 1 60); do
   if mariadb-admin --socket="$SOCKET" ping >/dev/null 2>&1; then break; fi
@@ -39,7 +39,7 @@ done
 
 if ! mariadb-admin --socket="$SOCKET" ping >/dev/null 2>&1; then
   echo "[entrypoint] MariaDB failed to start:" >&2
-  cat /run/mysqld/mariadb.err >&2 || true
+  cat /tmp/mysqld/mariadb.err >&2 || true
   exit 1
 fi
 
