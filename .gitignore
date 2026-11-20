@@ -13,3 +13,6 @@
 .env
 # Runtime environment (generated at container start)
 .env
+
+# Windows-only bundled binaries (unused on Linux; the container installs ffmpeg via apk)
+/bin/win/
