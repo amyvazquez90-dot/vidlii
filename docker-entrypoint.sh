@@ -13,8 +13,13 @@ ADMIN_PASSWORD="${ADMIN_PASSWORD:-vidlii-admin-2025}"
 SITE_TITLE="${SITE_TITLE:-VidLii}"
 SITE_SLOGAN="${SITE_SLOGAN:-Display Yourself.}"
 
-# Random per-boot database password (kept only inside this container)
-DB_PASS="$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24)"
+# Random per-boot database password (kept only inside this container).
+# Generated with PHP: a `tr | head` pipeline would exit 141 (SIGPIPE) under pipefail.
+DB_PASS="$(php -r 'echo bin2hex(random_bytes(16));')"
+if [ -z "$DB_PASS" ]; then
+  echo "[entrypoint] could not generate database password" >&2
+  exit 1
+fi
 
 mkdir -p /tmp/mysqld "$ROOT/cache" "$ROOT/usfi/v" "$ROOT/usfi/thmp" \
          "$ROOT/usfi/conv" "$ROOT/usfi/conv_2" "$ROOT/usfi/prvw"
@@ -87,4 +92,6 @@ show_online_count = "1"
 EOF
 
 echo "[entrypoint] starting PHP server on 0.0.0.0:${PORT}"
+# A few worker processes so asset requests are not serialized behind one request.
+export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
 exec php -S "0.0.0.0:${PORT}" -t "$ROOT" "$ROOT/router.php"
