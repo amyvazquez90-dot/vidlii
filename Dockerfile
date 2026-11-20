@@ -1,4 +1,4 @@
-FROM php:8.4-cli-alpine
+FROM php:8.4.27-cli-alpine
 
 # OS packages + PHP extensions required by VidLii (intl, gd, mysqli, zip) and MariaDB for the database
 RUN echo "os-refresh 2026-11-20" \
@@ -29,6 +29,7 @@ RUN printf '%s\n' \
       'memory_limit=512M' \
       'max_execution_time=900' \
       'date.timezone=UTC' \
+      'session.upload_progress.enabled=0' \
       > /usr/local/etc/php/conf.d/vidlii.ini
 
 ENV PORT=3000 \
