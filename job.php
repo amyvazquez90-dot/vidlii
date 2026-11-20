@@ -7,6 +7,19 @@
     $dotenv = \Dotenv\Dotenv::createImmutable(__dir__);
     $dotenv->load();
 
+    // The repository ships prebuilt binaries under bin/, but they are committed
+    // without the executable bit, so php-ffmpeg cannot run them. Use a bundled
+    // binary only when it is genuinely executable; otherwise fall back to the
+    // ffmpeg/ffprobe installed in the image (Dockerfile installs ffmpeg).
+    function find_binary($bundled, $name) {
+        if(is_file($bundled) && is_executable($bundled)) return $bundled;
+        if(PHP_OS != "WINNT") {
+            $system = trim((string)@shell_exec("command -v " . $name . " 2>/dev/null"));
+            if($system !== "") return $system;
+        }
+        return $bundled;
+    }
+
     function db($query) {
         $database = $_ENV["database"];
         $data = [];
@@ -40,8 +53,8 @@
         ];
     } else {
         $config = [
-            'ffmpeg.binaries' => "$bin_path/ffmpeg",
-            'ffprobe.binaries' => "$bin_path/ffprobe"
+            'ffmpeg.binaries' => find_binary("$bin_path/ffmpeg", "ffmpeg"),
+            'ffprobe.binaries' => find_binary("$bin_path/ffprobe", "ffprobe")
         ];
     }
     $config += [

@@ -102,6 +102,17 @@ if ! ROOT_IN="$ROOT" ADMIN_USER_IN="$ADMIN_USER" ADMIN_PASSWORD_IN="$ADMIN_PASSW
   echo "[entrypoint] WARNING: application database self-check failed" >&2
 fi
 
+# Upstream converts queued uploads by running job.php from cron. Keep an
+# equivalent worker running here so videos dropped in usfi/conv/ become
+# playable instead of sitting in the queue forever.
+echo "[entrypoint] starting video conversion worker"
+(
+  while true; do
+    php "$ROOT/job.php" >/dev/null 2>>/tmp/mysqld/worker.log || true
+    sleep 30
+  done
+) &
+
 echo "[entrypoint] starting PHP server on 0.0.0.0:${PORT}"
 # A few worker processes so asset requests are not serialized behind one request.
 export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
