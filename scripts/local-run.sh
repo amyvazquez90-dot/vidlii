@@ -63,7 +63,7 @@ password = "${DB_PASS}"
 title = "VidLii"
 slogan = "Display Yourself."
 uploadLimit = "2147483648"
-language = "en"
+language = "en_US"
 show_online_count = "1"
 ENV
 
