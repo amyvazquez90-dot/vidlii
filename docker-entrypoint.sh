@@ -56,7 +56,7 @@ if ! mariadb --socket="$SOCKET" -u root -e "SELECT 1 FROM ${DB_NAME}.users LIMIT
        ('logo', '0'), ('top_text', ''), ('guidelines', '1'), ('help', '1'),
        ('signup', '1'), ('login', '1'), ('uploader', '1'), ('channels', '1'), ('videos', '1');"
 
-  HASH="$(php -r 'echo password_hash(getenv("ADMIN_PASSWORD_IN"), PASSWORD_BCRYPT);' 2>/dev/null || true)"
+  HASH="$(ADMIN_PASSWORD_IN="$ADMIN_PASSWORD" php -r 'echo password_hash(getenv("ADMIN_PASSWORD_IN"), PASSWORD_BCRYPT);' 2>/dev/null || true)"
   if [ -z "$HASH" ]; then
     echo "[entrypoint] could not hash admin password" >&2
     exit 1
@@ -86,8 +86,6 @@ uploadLimit = "2147483648"
 language = "en"
 show_online_count = "1"
 EOF
-
-export ADMIN_PASSWORD_IN="$ADMIN_PASSWORD"
 
 echo "[entrypoint] starting PHP server on 0.0.0.0:${PORT}"
 exec php -S "0.0.0.0:${PORT}" -t "$ROOT" "$ROOT/router.php"
