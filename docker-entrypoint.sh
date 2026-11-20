@@ -79,7 +79,7 @@ mariadb --socket="$SOCKET" -u root -e \
    FLUSH PRIVILEGES;"
 
 cat > "$ROOT/.env" <<EOF
-database = "mysqli://${DB_USER}:${DB_PASS}@127.0.0.1/${DB_NAME}?charset=utf8mb4"
+database = "mysqli://${DB_USER}:${DB_PASS}@localhost/${DB_NAME}?unix_socket=${SOCKET}&charset=utf8mb4"
 host = "127.0.0.1"
 db = "${DB_NAME}"
 username = "${DB_USER}"

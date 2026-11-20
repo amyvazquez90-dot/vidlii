@@ -33,6 +33,9 @@ if (!preg_match('#^mysqli://([^:]+):([^@]*)@([^/]+)/([^?]+)#', $dsn, $d)) {
 }
 [, $dbUser, $dbPass, $dbHost, $dbName] = $d;
 
+// The app connects through the Unix socket when the DSN asks for one.
+$socket = preg_match('/[?&]unix_socket=([^&]+)/', $dsn, $s) ? urldecode($s[1]) : null;
+
 // Prove the language file the app will load actually exists.
 $lang = preg_match('/^language\s*=\s*"([^"]*)"/m', $raw, $l) ? $l[1] : '';
 $langFile = rtrim($root, '/') . '/languages/' . $lang . '.php';
@@ -42,8 +45,11 @@ if (!is_file($langFile)) {
 
 try {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    $conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-    echo "[verify-db] connected as {$dbUser} to {$dbName}\n";
+    $conn = $socket
+        ? new mysqli('localhost', $dbUser, $dbPass, $dbName, 0, $socket)
+        : new mysqli($dbHost, $dbUser, $dbPass, $dbName);
+    echo "[verify-db] connected as {$dbUser} to {$dbName}"
+        . ($socket ? " via socket" : ' via TCP') . "\n";
 
     $stmt = $conn->prepare(
         'SELECT username, password FROM users WHERE username = ? OR displayname = ? OR email = ? LIMIT 1'
