@@ -69,4 +69,4 @@ ENV
 
 echo "[local-run] serving $ROOT on 127.0.0.1:${PORT}"
 export PHP_CLI_SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
-exec php -S "127.0.0.1:${PORT}" -t "$ROOT" "$ROOT/router.php"
+exec php -d short_open_tag=On -d display_errors=Off -S "127.0.0.1:${PORT}" -t "$ROOT" "$ROOT/router.php"
