@@ -60,15 +60,14 @@ if ! mariadb --socket="$SOCKET" -u root -e "SELECT 1 FROM ${DB_NAME}.users LIMIT
        ('logo', '0'), ('top_text', ''), ('guidelines', '1'), ('help', '1'),
        ('signup', '1'), ('login', '1'), ('uploader', '1'), ('channels', '1'), ('videos', '1');"
 
-  HASH="$(ADMIN_PASSWORD_IN="$ADMIN_PASSWORD" php -r 'echo password_hash(getenv("ADMIN_PASSWORD_IN"), PASSWORD_BCRYPT);' 2>/dev/null || true)"
-  if [ -z "$HASH" ]; then
-    echo "[entrypoint] could not hash admin password" >&2
-    exit 1
-  fi
-  mariadb --socket="$SOCKET" -u root "$DB_NAME" -e \
-    "INSERT INTO users (username, displayname, email, password, reg_date, last_login, birthday, 1st_latest_ip, country, partner, is_admin, is_mod)
-     VALUES ('${ADMIN_USER}', '${ADMIN_USER}', '${ADMIN_USER}@example.com', '${HASH}', NOW(), NOW(), '1910-01-01', '127.0.0.1', 'US', 1, 1, 1);"
   echo "[entrypoint] database ready"
+fi
+
+# Admin account: create it, or repair its password hash so the documented
+# credentials always verify. Runs on every boot; the script is idempotent.
+if ! SOCKET_IN="$SOCKET" DB_IN="$DB_NAME" ADMIN_USER_IN="$ADMIN_USER" \
+     ADMIN_PASSWORD_IN="$ADMIN_PASSWORD" php "$ROOT/scripts/seed-admin.php"; then
+  echo "[entrypoint] admin account seeding failed" >&2
 fi
 
 # Database account used by the application
